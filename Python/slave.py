@@ -1,5 +1,3 @@
-__autor__="Michael Kirsch"
-import random
 import logging
 import serial
 import  time
@@ -11,13 +9,9 @@ s = serial.Serial("/dev/ttyS0", 9600, timeout=2)
 IOT.DeviceId = "c3Sup5D8N5bCVCS4pdMPzO5D"
 IOT.ClientId = "PaprikaYT_gcHaggvf"
 IOT.ClientKey = "G0sFl3FM"
-IOT.connect(httpServer='api.allthingstalk.io', secure=False)
 IOT.connect()
-IOT.addAsset(nosensor, "No2Sensor", "No2Sensor", False, "number")
-IOT.addAsset(humSensor, "humSensor", "humSensor", False, "number")
-IOT.addAsset(tempSense, "tempSensor", "tempSensor", False, "number")
-IOT.addAsset(soundSense, "soundSensor", "soundSensor", False, "number")
-IOT.addAsset(fail,"Failures", "Failures", False, "string")
+IOT.addAsset(3, "humSensor", "humSensor", False, "number")
+IOT.addAsset(2, "tempSensor", "tempSensor", False, "number")
 IOT.subscribe()
 
 def getint(asssetid):
@@ -48,7 +42,11 @@ def getstring(asssetid):
     b=b.replace("u'value':", "")
     return b
 
+
 while True:
-    level=getint(0)
-    s.write(str(level)+"$")
-    time.sleep(2)
+    s.write(str(getint(0)) + "$")
+    ArduinoData1 = s.readline()
+    a,b=ArduinoData1.split(",")
+    IOT.connect()
+    IOT.send(a, 2)
+    IOT.send(b, 3)
