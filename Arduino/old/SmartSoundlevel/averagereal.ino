@@ -20,8 +20,7 @@ int averageSound(int times)
           delta=maxi-mini;
           delta-=733;
           audio+=delta;
-      }
-    delay(100); 
+      } 
     audio/=times;
     int x=map(audio,0,250,0,100);
     Device.Send(String(x),soundlevel);

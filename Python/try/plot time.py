@@ -1,92 +1,31 @@
-#!/usr/bin/env python
-# Plot a graph of Data which is comming in on the fly
-# uses pylab
-# Author: Norbert Feurle
-# Date: 12.1.2012
-# License: if you get any profit from this then please share it with me  and only use it for good
-import pylab
-from pylab import *
-import Tkinter
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from PyQt4 import QtGui  # (the example applies equally well to PySide)
+import pyqtgraph as pg
 
-root = Tkinter.Tk()
-root.wm_title("Extended Realtime Plotter")
+## Always start by initializing Qt (only once per application)
+app = QtGui.QApplication([])
 
-xAchse=pylab.arange(0,100,1)
-yAchse=pylab.array([0]*100)
+## Define a top-level widget to hold everything
+w = QtGui.QWidget()
 
-fig = pylab.figure(1)
-ax = fig.add_subplot(111)
-ax.grid(True)
-ax.set_title("Realtime Waveform Plot")
-ax.set_xlabel("Time")
-ax.set_ylabel("Amplitude")
-ax.axis([0,100,-1.5,1.5])
-line1=ax.plot(xAchse,yAchse,'-')
+## Create some widgets to be placed inside
+btn = QtGui.QPushButton('press me')
+text = QtGui.QLineEdit('enter text')
+listw = QtGui.QListWidget()
+plot = pg.PlotWidget()
 
-canvas = FigureCanvasTkAgg(fig, master=root)
-canvas.show()
-canvas.get_tk_widget().pack(side=Tkinter.TOP, fill=Tkinter.BOTH, expand=1)
+## Create a grid layout to manage the widgets size and position
+layout = QtGui.QGridLayout()
+w.setLayout(layout)
+y=[1,5,7,7,4,3,3,4,5,2,6,7,9,6,4]
+x=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]
+## Add widgets to the layout in their proper positions
+layout.addWidget(btn, 0, 0)   # button goes in upper-left
+layout.addWidget(text, 1, 0)   # text edit goes in middle-left
+layout.addWidget(listw, 2, 0)  # list widget goes in bottom-left
+layout.addWidget(plot, 0, 1, 3, 1)  # plot goes on right side, spanning 3 rows
+plot.plot(x,y)
+## Display the widget as a new window
+w.show()
 
-toolbar = NavigationToolbar2TkAgg( canvas, root )
-toolbar.update()
-canvas._tkcanvas.pack(side=Tkinter.TOP, fill=Tkinter.BOTH, expand=1)
-
-values=[]
-values = [0 for x in range(100)]
-
-Ta=0.01
-fa=1.0/Ta
-fcos=3.5
-
-Konstant=cos(2*pi*fcos*Ta)
-T0=1.0
-T1=Konstant
-
-def SinwaveformGenerator():
-  global values,T1,Konstant,T0,wScale2
-  #ohmegaCos=arccos(T1)/Ta
-  #print "fcos=", ohmegaCos/(2*pi), "Hz"
-
-  Tnext=((Konstant*T1)*2)-T0
-  if len(values)%100>70:
-    values.append(random()*2-1)
-  else:
-    values.append(Tnext)
-  T0=T1
-  T1=Tnext
-  root.after(int(wScale2['to'])-wScale2.get(),SinwaveformGenerator)
-
-def RealtimePloter():
-  global values,wScale,wScale2
-  NumberSamples=min(len(values),wScale.get())
-  CurrentXAxis=pylab.arange(len(values)-NumberSamples,len(values),1)
-  line1[0].set_data(CurrentXAxis,pylab.array(values[-NumberSamples:]))
-  ax.axis([CurrentXAxis.min(),CurrentXAxis.max(),-1.5,1.5])
-  canvas.draw()
-  root.after(25,RealtimePloter)
-  #canvas.draw()
-
-  #manager.show()
-
-def _quit():
-    root.quit()     # stops mainloop
-    root.destroy()  # this is necessary on Windows to prevent
-                    # Fatal Python Error: PyEval_RestoreThread: NULL tstate
-
-button = Tkinter.Button(master=root, text='Quit', command=_quit)
-button.pack(side=Tkinter.BOTTOM)
-
-wScale = Tkinter.Scale(master=root,label="View Width:", from_=3, to=1000,sliderlength=30,length=ax.get_frame().get_window_extent().width, orient=Tkinter.HORIZONTAL)
-wScale2 = Tkinter.Scale(master=root,label="Generation Speed:", from_=1, to=200,sliderlength=30,length=ax.get_frame().get_window_extent().width, orient=Tkinter.HORIZONTAL)
-wScale2.pack(side=Tkinter.BOTTOM)
-wScale.pack(side=Tkinter.BOTTOM)
-
-wScale.set(100)
-wScale2.set(wScale2['to']-10)
-
-root.protocol("WM_DELETE_WINDOW", _quit)  #thanks aurelienvlg
-root.after(100,SinwaveformGenerator)
-root.after(100,RealtimePloter)
-Tkinter.mainloop()
-#pylab.show()
+## Start the Qt event loop
+app.exec_()
